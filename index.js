@@ -2,10 +2,12 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const jwt = require("jsonwebtoken");
 
 // routes import
 const menus = require("./routes/menus");
 const carts = require("./routes/carts");
+const users = require("./routes/users");
 
 const app = express();
 const port = process.env.PORT || 3500;
@@ -50,9 +52,26 @@ async function run() {
       next();
     });
 
+    // users collection
+    app.use((req, res, next) => {
+      req.usersColl = client.db("bistroBossDB").collection("users");
+
+      next();
+    });
+
     // routes
     app.use("/menus", menus);
     app.use("/carts", carts);
+    app.use("/users", users);
+
+    // generate jwt
+    app.post("/jwt", (req, res) => {
+      const token = jwt.sign(req.body, process.env.SECRET_SIGNATURE, {
+        expiresIn: "1h",
+      });
+
+      res.send({ token });
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

@@ -1,10 +1,11 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 const carts = express.Router();
+const authGuard = require("../middleware/authGuard");
 
 // get all carts
-carts.get("/", async (req, res) => {
-  const result = await req.cartsColl.find().toArray();
+carts.get("/", authGuard, async (req, res) => {
+  const result = await req.cartsColl.find({ email: req.query.email }).toArray();
 
   res.send(result);
 });
